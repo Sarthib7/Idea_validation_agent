@@ -51,7 +51,11 @@ import crew_definition  # noqa: F401,E402
 
 def _prefer_local_masumi_package() -> Optional[Path]:
     """Use the sibling pip-masumi checkout when it is available locally."""
-    local_checkout = Path(__file__).resolve().parents[2] / "pip-masumi"
+    roots = Path(__file__).resolve().parents
+    # e.g. /app/main.py only has parents /app and / — no third ancestor (Docker/Railway).
+    if len(roots) <= 2:
+        return None
+    local_checkout = roots[2] / "pip-masumi"
     package_init = local_checkout / "masumi" / "__init__.py"
     if not package_init.exists():
         return None
