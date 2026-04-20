@@ -144,19 +144,18 @@ def load_prompt(filename: str) -> str:
         return f"You are a {filename.replace('.md', '').replace('_', ' ')} agent."
 
 
-def _make_llm(anthropic_api_key: str, anthropic_model: str, *, max_tokens: int = 4096) -> LLM:
-    """Create an Anthropic LLM with supports_tools disabled to avoid strict tool errors.
+def _make_llm(anthropic_api_key: str, anthropic_model: str, *, supports_tools: bool = False) -> LLM:
+    """Create an Anthropic LLM with optional supports_tools flag.
 
     Claude 4 snapshots (e.g. claude-sonnet-4-20250514) reject tools with strict=True.
-    CrewAI's tool wrapping adds strict by default. We disable supports_tools so Anthropic
-    accepts tools without strict mode.
+    CrewAI's tool wrapping adds strict by default. We disable it so models work.
     """
     llm = LLM(
         model=_normalize_anthropic_model_name(anthropic_model),
         api_key=anthropic_api_key,
         temperature=0.7,
         max_tokens=max_tokens,
-        supports_tools=False,  # Disable tool wrapping to avoid strict errors
+        supports_tools=supports_tools,
     )
     return llm
 
