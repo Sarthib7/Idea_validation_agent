@@ -145,12 +145,20 @@ def load_prompt(filename: str) -> str:
 
 
 def _make_llm(anthropic_api_key: str, anthropic_model: str, *, max_tokens: int = 4096) -> LLM:
-    return LLM(
+    """Create an Anthropic LLM with supports_tools disabled to avoid strict tool errors.
+
+    Claude 4 snapshots (e.g. claude-sonnet-4-20250514) reject tools with strict=True.
+    CrewAI's tool wrapping adds strict by default. We disable supports_tools so Anthropic
+    accepts tools without strict mode.
+    """
+    llm = LLM(
         model=_normalize_anthropic_model_name(anthropic_model),
         api_key=anthropic_api_key,
         temperature=0.7,
         max_tokens=max_tokens,
+        supports_tools=False,  # Disable tool wrapping to avoid strict errors
     )
+    return llm
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -159,7 +167,7 @@ def _make_llm(anthropic_api_key: str, anthropic_model: str, *, max_tokens: int =
 
 def create_scoping_crew(idea: str, anthropic_api_key: str, anthropic_model: str) -> Crew:
     """A quick, single-agent pass that reads the idea and infers context."""
-    llm = _make_llm(anthropic_api_key, anthropic_model, max_tokens=2048)
+    llm = _make_llm(anthropic_api_key, anthropic_model, max_tokens=2048, supports_tools=False)
 
     scout = Agent(
         role="Startup Scoping Analyst",
