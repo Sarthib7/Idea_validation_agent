@@ -26,19 +26,8 @@ import uvicorn
 env_path = Path(__file__).parent / '.env'
 load_dotenv(dotenv_path=env_path, override=True)
 
-
-def _prefer_local_masumi_package() -> Optional[Path]:
-    """Use the sibling pip-masumi checkout when it is available locally."""
-    local_checkout = Path(__file__).resolve().parents[2] / "pip-masumi"
-    package_init = local_checkout / "masumi" / "__init__.py"
-    if not package_init.exists():
-        return None
-
-    local_checkout_str = str(local_checkout)
-    if local_checkout_str not in sys.path:
-        sys.path.insert(0, local_checkout_str)
-
-    return local_checkout
+# CrewAI: disable interactive trace prompts in server logs; optional in .env
+os.environ.setdefault("CREWAI_TRACING_ENABLED", "false")
 
 
 def _assert_supported_python_version() -> None:
@@ -54,6 +43,26 @@ def _assert_supported_python_version() -> None:
 
 
 _assert_supported_python_version()
+
+# Register CrewAI Anthropic mitigations at import time (not only on lazy import inside
+# process_job) so ``masumi run`` / uvicorn always patch before any LLM call.
+import crew_definition  # noqa: F401,E402
+
+
+def _prefer_local_masumi_package() -> Optional[Path]:
+    """Use the sibling pip-masumi checkout when it is available locally."""
+    local_checkout = Path(__file__).resolve().parents[2] / "pip-masumi"
+    package_init = local_checkout / "masumi" / "__init__.py"
+    if not package_init.exists():
+        return None
+
+    local_checkout_str = str(local_checkout)
+    if local_checkout_str not in sys.path:
+        sys.path.insert(0, local_checkout_str)
+
+    return local_checkout
+
+
 _LOCAL_MASUMI_CHECKOUT = _prefer_local_masumi_package()
 
 logger = logging.getLogger(__name__)
