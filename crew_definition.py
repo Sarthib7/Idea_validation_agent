@@ -65,7 +65,41 @@ def _patch_crewai_disable_strict_tool_schemas() -> None:
     _au.convert_tools_to_openai_schema = _convert_without_strict
 
 
+def _patch_anthropic_completion_strip_tool_strict() -> None:
+    """Drop ``strict`` on tool definitions right before Anthropic Messages API calls.
+
+    The Anthropic provider's ``_convert_tools_for_interference`` sometimes **passes
+    tools through unchanged** when they already contain ``input_schema`` (see CrewAI
+    ``completion.py``). Those definitions can still carry ``strict: true``, which
+    models like ``claude-sonnet-4-20250514`` reject with "does not support strict tools".
+    Stripping here covers every code path.
+    """
+    try:
+        from crewai.llms.providers.anthropic.completion import AnthropicCompletion
+    except ImportError:
+        return
+    if getattr(
+        AnthropicCompletion._convert_tools_for_interference,
+        "_idea_validation_tool_strict_stripped",
+        False,
+    ):
+        return
+
+    _orig = AnthropicCompletion._convert_tools_for_interference
+
+    def _strip_strict(self, tools):  # noqa: ANN001
+        out = _orig(self, tools)
+        for spec in out:
+            if isinstance(spec, dict):
+                spec.pop("strict", None)
+        return out
+
+    setattr(_strip_strict, "_idea_validation_tool_strict_stripped", True)
+    AnthropicCompletion._convert_tools_for_interference = _strip_strict
+
+
 _patch_crewai_disable_strict_tool_schemas()
+_patch_anthropic_completion_strip_tool_strict()
 
 
 def load_prompt(filename: str) -> str:
