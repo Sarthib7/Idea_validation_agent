@@ -215,7 +215,7 @@ async def synthesize_input(
     idea_payload: Dict[str, Any],
     input_schema: Dict[str, Any],
     anthropic_api_key: str,
-    anthropic_model: str = "claude-3-5-sonnet-latest",
+    anthropic_model: str = "claude-3-5-sonnet-20241022",
 ) -> Dict[str, Any]:
     """Build an input_data dict that satisfies a hired agent's schema.
 
