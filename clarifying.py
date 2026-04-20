@@ -201,7 +201,7 @@ def _strip_provider_prefix(model_name: str) -> str:
     name = (model_name or "").strip()
     if name.startswith("anthropic/"):
         return name.split("/", 1)[1]
-    return name or "claude-3-5-sonnet-20241022"
+    return name or "claude-sonnet-4-20250514"
 
 
 def _parse_json_object(text: str) -> Dict[str, Any]:
