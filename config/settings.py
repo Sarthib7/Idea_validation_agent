@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     # LLM (REQUIRED — Claude is primary)
     anthropic_api_key: Optional[str] = Field(default=None)
-    anthropic_model: str = Field(default="claude-3-5-sonnet-latest")
+    anthropic_model: str = Field(default="claude-3-5-sonnet-20241022")
     openai_api_key: Optional[str] = Field(default=None)
 
     # Web Search (REQUIRED — pick one)
