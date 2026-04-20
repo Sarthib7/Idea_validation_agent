@@ -31,9 +31,9 @@ logger = logging.getLogger(__name__)
 
 # Dated Anthropic model IDs (Messages API). Avoid ``*-latest`` aliases — they can 404
 # depending on SDK/API routing. See Anthropic docs for current snapshots.
-DEFAULT_ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"
+DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-20250514"
 ANTHROPIC_MODEL_FALLBACKS = (
-    "claude-sonnet-4-20250514",
+    "claude-3-5-sonnet-20241022",
     "claude-3-5-haiku-20241022",
 )
 
