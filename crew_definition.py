@@ -98,8 +98,39 @@ def _patch_anthropic_completion_strip_tool_strict() -> None:
     AnthropicCompletion._convert_tools_for_interference = _strip_strict
 
 
+def _patch_anthropic_prepare_params_strip_strict() -> None:
+    """Last-resort: strip ``strict`` from ``params[''tools'']`` after CrewAI builds the request.
+
+    Ensures no Anthropic Messages call includes tool-level ``strict`` (some Claude 4
+    snapshots reject it). Complements the two patches above; safe to call repeatedly.
+    """
+    try:
+        from crewai.llms.providers.anthropic.completion import AnthropicCompletion
+    except ImportError:
+        return
+    if getattr(
+        AnthropicCompletion._prepare_completion_params,
+        "_idea_validation_prepare_stripped",
+        False,
+    ):
+        return
+
+    _orig = AnthropicCompletion._prepare_completion_params
+
+    def _prepare_strip_strict(self, messages, system_message=None, tools=None, available_functions=None):  # noqa: ANN001
+        params = _orig(self, messages, system_message=system_message, tools=tools, available_functions=available_functions)
+        for spec in params.get("tools") or []:
+            if isinstance(spec, dict):
+                spec.pop("strict", None)
+        return params
+
+    setattr(_prepare_strip_strict, "_idea_validation_prepare_stripped", True)
+    AnthropicCompletion._prepare_completion_params = _prepare_strip_strict
+
+
 _patch_crewai_disable_strict_tool_schemas()
 _patch_anthropic_completion_strip_tool_strict()
+_patch_anthropic_prepare_params_strip_strict()
 
 
 def load_prompt(filename: str) -> str:
