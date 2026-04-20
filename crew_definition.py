@@ -144,7 +144,13 @@ def load_prompt(filename: str) -> str:
         return f"You are a {filename.replace('.md', '').replace('_', ' ')} agent."
 
 
-def _make_llm(anthropic_api_key: str, anthropic_model: str, *, supports_tools: bool = False) -> LLM:
+def _make_llm(
+    anthropic_api_key: str,
+    anthropic_model: str,
+    *,
+    max_tokens: int = 4096,
+    supports_tools: bool = False,
+) -> LLM:
     """Create an Anthropic LLM with optional supports_tools flag.
 
     Claude 4 snapshots (e.g. claude-sonnet-4-20250514) reject tools with strict=True.
